@@ -1,34 +1,37 @@
 package models;
 
-import java.util.Random;
+import java.util.UUID;
 
-public class CheckingAccount implements AccountAble{
-    private Long accountNumber;
+public class CheckingAccount implements AccountAble {
+    private UUID accountNumber;
     private Long balance;
 
-    public CheckingAccount() {
-        //TODO needs checks and balances
-        Random random = new Random();
-        this.accountNumber = random.nextLong();
+    public CheckingAccount(UUID uuid) {
+        this.accountNumber = uuid;
         this.balance = 0L;
     }
 
     public boolean withdraw(Long amount) {
-        if(amount < balance){
-            balance = balance - amount;
-            return true;
-        } else return  false;
+        //check if amount is positive and less then balance
+        if (amount <= 0 || amount > this.balance) return false;
+
+        this.balance = this.balance - amount;
+        return true;
     }
 
-    public void deposit(Long amount) {
-        balance = balance + amount;
+    public boolean deposit(Long amount) {
+        if (amount <= 0) return false;
+
+        this.balance = this.balance + amount;
+        return true;
+
     }
 
-    public String ToString(){
+    public String toString() {
         return String.format("accountNumber: %s\nbalance: %s", this.accountNumber, this.balance);
     }
 
-    public Long getAccountNumber() {
+    public UUID getAccountNumber() {
         return accountNumber;
     }
 

@@ -1,5 +1,5 @@
 package factory;
 
 public interface AbstractFactory<T> {
-    T create(String choice) ;
+    T create(String choice);
 }

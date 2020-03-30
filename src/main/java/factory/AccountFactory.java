@@ -5,64 +5,72 @@ import models.CheckingAccount;
 import models.SavingsAccount;
 
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.UUID;
 
-public class AccountFactory implements AbstractFactory{
+public class AccountFactory implements AbstractFactory<AccountAble> {
 
-    private ArrayList<SavingsAccount> savingsAccounts = new ArrayList();
+    private static ArrayList<AccountAble> accounts = new ArrayList<>();
 
-    private ArrayList<CheckingAccount> checkingAccounts = new ArrayList();
-
-
-    public void addAccount(SavingsAccount account){
-        savingsAccounts.add(account);
+    public void addAccount(AccountAble account) {
+        accounts.add(account);
     }
 
-    public void addAccount(CheckingAccount account){
-        checkingAccounts.add(account);
+    public AccountAble getAccount(UUID accountNumber) {
+        for (AccountAble account : accounts) {
+            if (account.getAccountNumber().equals(accountNumber)) {
+                return account;
+            }
+        }
+        return null;
     }
 
-    public boolean TransferFunds(AccountAble withdrawAccount, AccountAble depositAccount, Long amount){
-        if(withdrawAccount.withdraw(amount)){
-            depositAccount.deposit(amount);
-            return true;
+    public boolean TransferFunds(AccountAble withdrawAccount, AccountAble depositAccount, Long amount) {
+        return withdrawAccount.withdraw(amount) && depositAccount.deposit(amount);
+    }
+
+    public boolean updateAccountList(AccountAble account) {
+        for (AccountAble listedaccount : accounts) {
+            if (listedaccount.getAccountNumber().equals(account.getAccountNumber())) {
+                listedaccount = account;
+                return true;
+            }
         }
         return false;
     }
 
-    public void updateAccountList(SavingsAccount account){
-        for (SavingsAccount listedaccount :this.savingsAccounts) {
-            if(listedaccount.getAccountNumber().equals(account.getAccountNumber())){
-                listedaccount = account;
-            }
-        }
-    }
-
-    public void updateAccountList(CheckingAccount account){
-        for (CheckingAccount listedaccount :this.checkingAccounts) {
-            if(listedaccount.getAccountNumber() == account.getAccountNumber()){
-                listedaccount = account;
-            }
-        }
-    }
 
     @Override
     public AccountAble create(String choice) {
         return CreateAccount.create(choice);
     }
 
-
     private static class CreateAccount {
         public static AccountAble create(String choice) {
-            Random random = new Random();
             switch (choice) {
                 case "checking":
-                    return new CheckingAccount();
+                    return new CheckingAccount(generateUUID());
                 case "saving":
-                    return new SavingsAccount();
+                    return new SavingsAccount(generateUUID());
                 default:
                     return null;
             }
+        }
+
+        //TODO maybe not the place to generate this. on the other hand, IRL this would be handled by the Database.
+        private static UUID generateUUID() {
+            boolean checker;
+            UUID uuid;
+            do {
+                checker = false;
+                uuid = UUID.randomUUID();
+                for (AccountAble account : AccountFactory.accounts) {
+                    if (account.getAccountNumber().equals(uuid)) {
+                        checker = true;
+                    }
+                }
+            }
+            while (checker);
+            return uuid;
         }
     }
 }
